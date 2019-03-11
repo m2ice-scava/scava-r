@@ -8,6 +8,7 @@
 #
 
 library(shiny)
+library(jsonlite)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -34,6 +35,10 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+  
+    #MyData <- read.csv(file="test_csv.csv", header=TRUE, sep=";")
+    MyData <- fromJSON("metricsRaw.json", simplifyVector = TRUE)
+   print(MyData$emf$`coreCommittersChurnBar`$name)
    
    output$distPlot <- renderPlot({
       # generate bins based on input$bins from ui.R
