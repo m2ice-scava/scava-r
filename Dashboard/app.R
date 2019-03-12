@@ -9,12 +9,14 @@
 
 library(shiny)
 library(jsonlite)
+library(fmsb)
+
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
    
    # Application title
-   titlePanel("Old Faithful Geyser Data"),
+   titlePanel("Emotions radar"),
    
    # Sidebar with a slider input for number of bins 
    sidebarLayout(
@@ -28,7 +30,7 @@ ui <- fluidPage(
       
       # Show a plot of the generated distribution
       mainPanel(
-         plotOutput("distPlot")
+         plotOutput("emotionsRadarPlot")
       )
    )
 )
@@ -37,17 +39,16 @@ ui <- fluidPage(
 server <- function(input, output) {
   
     #MyData <- read.csv(file="test_csv.csv", header=TRUE, sep=";")
-    MyData <- fromJSON("metricsRaw.json", simplifyVector = TRUE)
-   print(MyData$emf$`coreCommittersChurnBar`$name)
+   JSONJestData <- fromJSON("metricsRaw.json", simplifyVector = TRUE)
+   print(JSONJestData$bugs.emotions.commentPercentages$name)
    
-   output$distPlot <- renderPlot({
-      # generate bins based on input$bins from ui.R
-      x    <- faithful[, 2] 
-      bins <- seq(min(x), max(x), length.out = input$bins + 1)
-      
-      # draw the histogram with the specified number of bins
-      hist(x, breaks = bins, col = 'darkgray', border = 'white')
-   })
+   emotionsCommentPourcentagesData <- JSONJestData$bugs.emotions.commentPercentages$datatable
+   
+   print(emotionsCommentPourcentagesData)
+   
+   output$emotionsRadarPlot <- renderPlot(
+     radarchart(emotionsCommentPourcentagesData)
+   )
 }
 
 # Run the application 
