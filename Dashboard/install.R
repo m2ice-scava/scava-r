@@ -1,0 +1,5 @@
+install.packages('shiny')
+install.packages('jsonlite')
+install.packages('fmsb')
+install.packages('reshape')
+install.packages('shinyWidgets')
