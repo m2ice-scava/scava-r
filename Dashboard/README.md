@@ -24,3 +24,6 @@ Open the __Dashboard/Dashboard.Rproj__ file to launch the Rstudio project.
 To run the app, use the command below in the *RStudio console* :  
 
     runApp()
+    
+### Dashboard for Developpers
+Execute the developperDashboard.R script (With Rstudio, open it then click run).
