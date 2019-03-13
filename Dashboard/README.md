@@ -13,6 +13,7 @@ If not done yet, you need to install the library below to launch the app.
 * jsonlite
 * fmsb
 * reshape
+* shinyWidgets
 
 To install a library use the command on the *R console* or *RStudio console* :
 
