@@ -19,14 +19,14 @@ ui <- fluidPage(
   # Application title
   titlePanel("Emotions radar"),
   
-  # Sidebar with a slider input for number of bins 
+  # Sidebar with a slider input for date 
   sidebarLayout(
     sidebarPanel(
-      sliderInput("bins",
-                  "Number of bins:",
-                  min = 1,
-                  max = 50,
-                  value = 30)
+      sliderInput("Date",
+                  "Date",
+                  min = 2010,
+                  max = 2019,
+                  value = 2019, sep=" ")
     ),
     
     # Show a plot of the generated distribution
@@ -51,11 +51,15 @@ server <- function(input, output) {
   )
   
   # pivot the data frame to have emotion per date
-  print(cast(dataFrameEmotionsRadar, date ~ emotion))
+  dataFrameEmotionsRadarShape = cast(dataFrameEmotionsRadar, date ~ emotion)
   
+  # Transform NA into 0
+  dataFrameEmotionsRadarShape[is.na(dataFrameEmotionsRadarShape)] <- 0
+  
+  # Make the radar plot with the data
   output$emotionsRadarPlot <- renderPlot(
     radarchart(
-      dataFrameEmotionsRadar,
+      dataFrameEmotionsRadarShape,
       maxmin=F,
       emotionsCommentPourcentagesData
     )
