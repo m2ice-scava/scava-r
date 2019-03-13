@@ -22,8 +22,7 @@ ui <- fluidPage(
   fluidRow(
     # Show a plot of the generated distribution
     mainPanel(
-      textOutput("test_text"),
-      textOutput("complexity_text"),
+      tableOutput("dataArray"),
       plotOutput("LOCChart", width = "100%", height = "400px")
     )
   )
@@ -48,21 +47,17 @@ ui <- fluidPage(
     complexityRows <- complexityDatatable[,length(complexityDatatable)]
     complexityLastValue <- complexityRows[length(complexityRows)]
     complexity_text <- paste("Number of Java methods for Cyclometic Complexity risk factor : ", complexityLastValue)
-    output$complexity_text <- renderText({complexity_text})
+
+    dataArray = list(c("Test coverage", "Number of Java methods for Cyclometic Complexity risk factor"), c(testCoverageLastValue, complexityLastValue))
+    output$dataArray <- renderTable(dataArray, colnames = FALSE)
     
     # Retrieve the complexity of the code
     LOCDatatable <- JSONJestData$LOCoverfilesovertime$datatable
     
     LOCColumns <- LOCDatatable[,length(LOCDatatable)]
-    print("LOCDatatable")
-    print(LOCDatatable)
     
     yrange <- LOCDatatable[, 1]
     xrange <- LOCDatatable[, 2]
-    print("y")
-    print(yrange)
-    print("x")
-    print(xrange)
     
     output$LOCChart <- renderPlot({
       plot(yrange, xrange, xlab="Days", ylab="Number of line of code", main = "Number of line of code over time", type = "o")
