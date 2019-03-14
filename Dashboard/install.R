@@ -1,0 +1,8 @@
+install.packages('shiny')
+install.packages('jsonlite')
+install.packages('fmsb')
+install.packages('reshape')
+install.packages('reshape2')
+install.packages('shinyWidgets')
+install.packages("tidyverse")
+install.packages("scales")

@@ -10,6 +10,8 @@
 library(shiny)
 library(jsonlite)
 library(fmsb)
+library(ggplot2)
+library(scales)
 
 
 # Define UI for application that draws a histogram
@@ -22,8 +24,9 @@ ui <- fluidPage(
   fluidRow(
     # Show a plot of the generated distribution
     mainPanel(
-      textOutput("test_text"),
-      textOutput("complexity_text"),
+      tags$h3("Metrics"),
+      tableOutput("dataArray"),
+      tags$h3("Lines of code over time"),
       plotOutput("LOCChart", width = "100%", height = "400px")
     )
   )
@@ -48,24 +51,24 @@ ui <- fluidPage(
     complexityRows <- complexityDatatable[,length(complexityDatatable)]
     complexityLastValue <- complexityRows[length(complexityRows)]
     complexity_text <- paste("Number of Java methods for Cyclometic Complexity risk factor : ", complexityLastValue)
-    output$complexity_text <- renderText({complexity_text})
+    dataArray = list(c("Test coverage percentage", "Number of Java methods for Cyclometic Complexity risk factor"), c(testCoverageLastValue, complexityLastValue))
+    output$dataArray <- renderTable(dataArray, colnames = FALSE)
     
     # Retrieve the complexity of the code
     LOCDatatable <- JSONJestData$LOCoverfilesovertime$datatable
     
-    LOCColumns <- LOCDatatable[,length(LOCDatatable)]
-    print("LOCDatatable")
-    print(LOCDatatable)
+    date <- LOCDatatable$Date
+    gini <- LOCDatatable$Gini
     
-    yrange <- LOCDatatable[, 1]
-    xrange <- LOCDatatable[, 2]
-    print("y")
-    print(yrange)
-    print("x")
-    print(xrange)
+    LOCDatatable$Date <- as.Date(LOCDatatable$Date, "%Y%m%d")
+    dateSequence <- seq(LOCDatatable$Date[1], LOCDatatable$Date[length(LOCDatatable$Date)], "month")
     
     output$LOCChart <- renderPlot({
-      plot(yrange, xrange, xlab="Days", ylab="Number of line of code", main = "Number of line of code over time", type = "o")
+      ggplot(LOCDatatable, aes(x=Date)) +
+        geom_line(aes(y = gini, colour = "Lines of code"), size=1) +
+        labs(x = "date", y = "Lines of code") +
+        scale_x_date(labels = date_format("%m-%Y")) +
+        theme(axis.text.x=element_text(angle=40, hjust=1))
     })
   }
   

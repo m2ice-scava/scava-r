@@ -11,10 +11,15 @@ library(shiny)
 library(jsonlite)
 library(fmsb)
 library(reshape)
+library(reshape2)
 library(shinyWidgets)
+library(ggplot2)
+library(scales)
 
 JSONJestData <- fromJSON("metricsRaw.json", simplifyVector = TRUE)
 
+
+# ** Emotions Data
 emotionsCommentPourcentagesData <- JSONJestData$bugs.emotions.commentPercentages$datatable
 
 dataFrameEmotionsRadar <- data.frame(
@@ -33,33 +38,50 @@ dataFrameEmotionsRadarShape[is.na(dataFrameEmotionsRadarShape)] <- 0
 dataFrameEmotionsRadarShape$date <- paste(substr(dataFrameEmotionsRadarShape$date, 7, 8 ), substr(dataFrameEmotionsRadarShape$date, 5, 6), substr(dataFrameEmotionsRadarShape$date, 1, 4), sep="/")
 
 
+# ** Stability Data
+nonResolvedClosedBugs <- JSONJestData$bugs.nonResolvedClosedBugs$datatable
+resolvedClosedBugs <- JSONJestData$bugs.resolvedClosedBugs$datatable
+unansweredBugs <- JSONJestData$bugs.unansweredBugs$datatable
+invalidBugs <- JSONJestData$bugs.invalidBugs$datatable
+wontFixBugs <- JSONJestData$bugs.wontFixBugs$datatable
+worksForMeBugs <- JSONJestData$bugs.worksForMeBugs$datatable
+# newBugs <- JSONJestData$bugs.newbugs$datatable
+
+lastDateBugs <- paste(substr(tail(nonResolvedClosedBugs$Date, 1), 7, 8 ), substr(tail(nonResolvedClosedBugs$Date, 1), 5, 6), substr(tail(nonResolvedClosedBugs$Date, 1), 1, 4), sep="/")
+bugsValues <- c(tail(nonResolvedClosedBugs$Bugs, 1), tail(resolvedClosedBugs$Bugs, 1),tail(unansweredBugs$Bugs, 1), tail(invalidBugs$Bugs, 1),tail(wontFixBugs$Bugs, 1), tail(worksForMeBugs$Bugs, 1))
+bugsLabels <- c(JSONJestData$bugs.nonResolvedClosedBugs$name, JSONJestData$bugs.resolvedClosedBugs$name, JSONJestData$bugs.unansweredBugs$name, JSONJestData$bugs.invalidBugs$name, JSONJestData$bugs.wontFixBugs$name, JSONJestData$bugs.worksForMeBugs$name)
+bugsLabels <- paste(bugsLabels, bugsValues,sep=" - ")
 # Define UI for application that draws a histogram
 ui <- fluidPage(
   
   # Application title
-  titlePanel("Emotions radar"),
+  titlePanel("End-user Dashboard"),
   
   # Sidebar with a slider input for date 
   sidebarLayout(
     sidebarPanel(
       sliderTextInput(inputId = "date",
-                  label = "Date",
+                  label = "Emotion date",
                   choices = dataFrameEmotionsRadarShape$date,
                   selected = dataFrameEmotionsRadarShape$date[[1]])
     ),
     
     # Show a plot of the generated distribution
     mainPanel(
-      plotOutput("emotionsRadarPlot")
+      tags$h3("Emotions"),
+      plotOutput("emotionsRadarPlot"),
+      tags$h3("Stability"),
+      plotOutput("stabilityPieChart"),
+      tags$h3("Posts activity over time"),
+      plotOutput("averageRepliesPerUserChart", width = "100%", height = "400px")
     )
   )
+  
+  
 )
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-  
-  
-  
   
   # Make the radar plot with the data
   output$emotionsRadarPlot <- renderPlot(
@@ -71,10 +93,36 @@ server <- function(input, output) {
       plty = 1,
       caxislabels = seq(0, 100, 20),
       axislabcol = "grey",
-      emotionsCommentPourcentagesData
-    )
+      title = "Emotions Radar"
+    ))
     
+  output$stabilityPieChart <- renderPlot(
+
+    pie(bugsValues, labels = bugsLabels, main=paste("Bugs treatments up to",lastDateBugs))
   )
+  
+  # Retrieve all the needed fields
+  requestRepliesBug <- JSONJestData$"bugs.requestsreplies-bugaverage"$datatable
+  date <- requestRepliesBug$Date
+  comments <- requestRepliesBug$Comments
+  requests <- requestRepliesBug$Requests
+  replies <- requestRepliesBug$Replies
+  
+  # Convert date string to a Date object
+  requestRepliesBug$date <- as.Date(date, "%Y%m%d")
+  dateSequence <- seq(requestRepliesBug$date[1], requestRepliesBug$date[length(requestRepliesBug$date)], "month")
+  
+  # Generate the plot chart
+  output$averageRepliesPerUserChart <- renderPlot({
+    ggplot(requestRepliesBug, aes(x=date)) +
+      geom_line(aes(y = comments, colour = "Comments"), size=1) + 
+      geom_line(aes(y = requests, colour = "Requests"), size=1) + 
+      geom_line(aes(y = replies, colour = "Replies"), size=1) +
+      labs(x = "date", y = "Number of post") +
+      scale_x_date(labels = date_format("%m-%Y")) +
+      theme(axis.text.x=element_text(angle=40, hjust=1))
+  })
+  
 }
 
 # Run the application 
