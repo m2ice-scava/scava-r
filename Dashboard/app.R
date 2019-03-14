@@ -11,7 +11,10 @@ library(shiny)
 library(jsonlite)
 library(fmsb)
 library(reshape)
+library(reshape2)
 library(shinyWidgets)
+library(ggplot2)
+library(scales)
 
 JSONJestData <- fromJSON("metricsRaw.json", simplifyVector = TRUE)
 
@@ -52,23 +55,26 @@ bugsLabels <- paste(bugsLabels, bugsValues,sep=" - ")
 ui <- fluidPage(
   
   # Application title
-  titlePanel("End User Dashboard"),
+  titlePanel("End-user Dashboard"),
   
   # Sidebar with a slider input for date 
   sidebarLayout(
     sidebarPanel(
       h2("Emotions radar"),
       sliderTextInput(inputId = "date",
-                  label = "Date",
+                  label = "Emotion date",
                   choices = dataFrameEmotionsRadarShape$date,
                   selected = dataFrameEmotionsRadarShape$date[[1]])
     ),
     
     # Show a plot of the generated distribution
     mainPanel(
+      tags$h3("Emotions"),
       plotOutput("emotionsRadarPlot"),
-      br(),
-      plotOutput("stabilityPieChart")
+      tags$h3("Stability"),
+      plotOutput("stabilityPieChart"),
+      tags$h3("Posts activity"),
+      plotOutput("averageRepliesPerUserChart", width = "100%", height = "400px")
     )
   )
   
@@ -95,7 +101,25 @@ server <- function(input, output) {
 
     pie(bugsValues, labels = bugsLabels, main=paste("Bugs treatments up to",lastDateBugs))
   )
-    
+  
+  requestRepliesBug <- JSONJestData$"bugs.requestsreplies-bugaverage"$datatable
+  date <- requestRepliesBug$Date
+  comments <- requestRepliesBug$Comments
+  requests <- requestRepliesBug$Requests
+  replies <- requestRepliesBug$Replies
+  
+  requestRepliesBug$date <- as.Date(date, "%Y%m%d")
+  dateSequence <- seq(requestRepliesBug$date[1], requestRepliesBug$date[length(requestRepliesBug$date)], "month")
+  
+  output$averageRepliesPerUserChart <- renderPlot({
+    ggplot(requestRepliesBug, aes(x=date)) +
+      geom_line(aes(y = comments, colour = "Comments"), size=1) + 
+      geom_line(aes(y = requests, colour = "Requests"), size=1) + 
+      geom_line(aes(y = replies, colour = "Replies"), size=1) +
+      labs(x = "date", y = "Number of post") +
+      scale_x_date(labels = date_format("%m-%Y")) +
+      theme(axis.text.x=element_text(angle=40, hjust=1))
+  })
   
 }
 
