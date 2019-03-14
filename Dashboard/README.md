@@ -25,10 +25,11 @@ Execute the __Dashboard/developperDashboard.R__ script (With Rstudio, open it
 then click run).
 
 # End-user Dashboard
-The end-user dashboard contains three parts :
+The end-user dashboard contains four parts :
 + Emotions Radar chart
 + Emotions Radar slider bar
 + Bugs treatments pie chart
++ Posts activity line chart
 
 ## Emotions Radar chart
 The emotions radar shows the different emotions shown on the comments at a given
@@ -40,4 +41,14 @@ The emotions radar slider bar permit to change the date to the Radar chart
 ## Bugs treatments pie chart
 The Bugs treatments pie chart show the last bugs treatments state of the project
 
-# Dev Dashboard
+## Posts activity chart
+The sum up the activity of the user posts on the project
+
+# Developper Dashboard
+This dashboard is aimed toward developpers
+
+## Summary of metrics
+The first section is a summary of metrics
+
+## Line of code chart
+This display the amount of line of codes over time
