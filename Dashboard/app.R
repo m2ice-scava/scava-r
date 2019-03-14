@@ -15,6 +15,8 @@ library(shinyWidgets)
 
 JSONJestData <- fromJSON("metricsRaw.json", simplifyVector = TRUE)
 
+
+# ** Emotions Data
 emotionsCommentPourcentagesData <- JSONJestData$bugs.emotions.commentPercentages$datatable
 
 dataFrameEmotionsRadar <- data.frame(
@@ -33,15 +35,29 @@ dataFrameEmotionsRadarShape[is.na(dataFrameEmotionsRadarShape)] <- 0
 dataFrameEmotionsRadarShape$date <- paste(substr(dataFrameEmotionsRadarShape$date, 7, 8 ), substr(dataFrameEmotionsRadarShape$date, 5, 6), substr(dataFrameEmotionsRadarShape$date, 1, 4), sep="/")
 
 
+# ** Stability Data
+nonResolvedClosedBugs <- JSONJestData$bugs.nonResolvedClosedBugs$datatable
+resolvedClosedBugs <- JSONJestData$bugs.resolvedClosedBugs$datatable
+unansweredBugs <- JSONJestData$bugs.unansweredBugs$datatable
+invalidBugs <- JSONJestData$bugs.invalidBugs$datatable
+wontFixBugs <- JSONJestData$bugs.wontFixBugs$datatable
+worksForMeBugs <- JSONJestData$bugs.worksForMeBugs$datatable
+# newBugs <- JSONJestData$bugs.newbugs$datatable
+
+lastDateBugs <- paste(substr(tail(nonResolvedClosedBugs$Date, 1), 7, 8 ), substr(tail(nonResolvedClosedBugs$Date, 1), 5, 6), substr(tail(nonResolvedClosedBugs$Date, 1), 1, 4), sep="/")
+bugsValues <- c(tail(nonResolvedClosedBugs$Bugs, 1), tail(resolvedClosedBugs$Bugs, 1),tail(unansweredBugs$Bugs, 1), tail(invalidBugs$Bugs, 1),tail(wontFixBugs$Bugs, 1), tail(worksForMeBugs$Bugs, 1))
+bugsLabels <- c(JSONJestData$bugs.nonResolvedClosedBugs$name, JSONJestData$bugs.resolvedClosedBugs$name, JSONJestData$bugs.unansweredBugs$name, JSONJestData$bugs.invalidBugs$name, JSONJestData$bugs.wontFixBugs$name, JSONJestData$bugs.worksForMeBugs$name)
+bugsLabels <- paste(bugsLabels, bugsValues,sep=" - ")
 # Define UI for application that draws a histogram
 ui <- fluidPage(
   
   # Application title
-  titlePanel("Emotions radar"),
+  titlePanel("End User Dashboard"),
   
   # Sidebar with a slider input for date 
   sidebarLayout(
     sidebarPanel(
+      h2("Emotions radar"),
       sliderTextInput(inputId = "date",
                   label = "Date",
                   choices = dataFrameEmotionsRadarShape$date,
@@ -50,16 +66,17 @@ ui <- fluidPage(
     
     # Show a plot of the generated distribution
     mainPanel(
-      plotOutput("emotionsRadarPlot")
+      plotOutput("emotionsRadarPlot"),
+      br(),
+      plotOutput("stabilityPieChart")
     )
   )
+  
+  
 )
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-  
-  
-  
   
   # Make the radar plot with the data
   output$emotionsRadarPlot <- renderPlot(
@@ -71,10 +88,15 @@ server <- function(input, output) {
       plty = 1,
       caxislabels = seq(0, 100, 20),
       axislabcol = "grey",
-      emotionsCommentPourcentagesData
-    )
+      title = "Emotions Radar"
+    ))
     
+  output$stabilityPieChart <- renderPlot(
+
+    pie(bugsValues, labels = bugsLabels, main=paste("Bugs treatments up to",lastDateBugs))
   )
+    
+  
 }
 
 # Run the application 
