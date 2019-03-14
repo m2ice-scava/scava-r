@@ -10,6 +10,8 @@
 library(shiny)
 library(jsonlite)
 library(fmsb)
+library(ggplot2)
+library(scales)
 
 
 # Define UI for application that draws a histogram
@@ -22,7 +24,9 @@ ui <- fluidPage(
   fluidRow(
     # Show a plot of the generated distribution
     mainPanel(
+      tags$h3("Metrics"),
       tableOutput("dataArray"),
+      tags$h3("Lines of code over time"),
       plotOutput("LOCChart", width = "100%", height = "400px")
     )
   )
@@ -53,11 +57,18 @@ ui <- fluidPage(
     # Retrieve the complexity of the code
     LOCDatatable <- JSONJestData$LOCoverfilesovertime$datatable
     
-    yrange <- LOCDatatable[, 1]
-    xrange <- LOCDatatable[, 2]
+    date <- LOCDatatable$Date
+    gini <- LOCDatatable$Gini
+    
+    LOCDatatable$Date <- as.Date(LOCDatatable$Date, "%Y%m%d")
+    dateSequence <- seq(LOCDatatable$Date[1], LOCDatatable$Date[length(LOCDatatable$Date)], "month")
     
     output$LOCChart <- renderPlot({
-      plot(yrange, xrange, xlab="Days", ylab="Number of line of code", main = "Number of line of code over time", type = "o")
+      ggplot(LOCDatatable, aes(x=Date)) +
+        geom_line(aes(y = gini, colour = "Lines of code"), size=1) +
+        labs(x = "date", y = "Lines of code") +
+        scale_x_date(labels = date_format("%m-%Y")) +
+        theme(axis.text.x=element_text(angle=40, hjust=1))
     })
   }
   

@@ -60,7 +60,6 @@ ui <- fluidPage(
   # Sidebar with a slider input for date 
   sidebarLayout(
     sidebarPanel(
-      h2("Emotions radar"),
       sliderTextInput(inputId = "date",
                   label = "Emotion date",
                   choices = dataFrameEmotionsRadarShape$date,
@@ -73,7 +72,7 @@ ui <- fluidPage(
       plotOutput("emotionsRadarPlot"),
       tags$h3("Stability"),
       plotOutput("stabilityPieChart"),
-      tags$h3("Posts activity"),
+      tags$h3("Posts activity over time"),
       plotOutput("averageRepliesPerUserChart", width = "100%", height = "400px")
     )
   )
@@ -102,15 +101,18 @@ server <- function(input, output) {
     pie(bugsValues, labels = bugsLabels, main=paste("Bugs treatments up to",lastDateBugs))
   )
   
+  # Retrieve all the needed fields
   requestRepliesBug <- JSONJestData$"bugs.requestsreplies-bugaverage"$datatable
   date <- requestRepliesBug$Date
   comments <- requestRepliesBug$Comments
   requests <- requestRepliesBug$Requests
   replies <- requestRepliesBug$Replies
   
+  # Convert date string to a Date object
   requestRepliesBug$date <- as.Date(date, "%Y%m%d")
   dateSequence <- seq(requestRepliesBug$date[1], requestRepliesBug$date[length(requestRepliesBug$date)], "month")
   
+  # Generate the plot chart
   output$averageRepliesPerUserChart <- renderPlot({
     ggplot(requestRepliesBug, aes(x=date)) +
       geom_line(aes(y = comments, colour = "Comments"), size=1) + 
