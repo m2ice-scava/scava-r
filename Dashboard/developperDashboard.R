@@ -47,14 +47,11 @@ ui <- fluidPage(
     complexityRows <- complexityDatatable[,length(complexityDatatable)]
     complexityLastValue <- complexityRows[length(complexityRows)]
     complexity_text <- paste("Number of Java methods for Cyclometic Complexity risk factor : ", complexityLastValue)
-
-    dataArray = list(c("Test coverage", "Number of Java methods for Cyclometic Complexity risk factor"), c(testCoverageLastValue, complexityLastValue))
+    dataArray = list(c("Test coverage percentage", "Number of Java methods for Cyclometic Complexity risk factor"), c(testCoverageLastValue, complexityLastValue))
     output$dataArray <- renderTable(dataArray, colnames = FALSE)
     
     # Retrieve the complexity of the code
     LOCDatatable <- JSONJestData$LOCoverfilesovertime$datatable
-    
-    LOCColumns <- LOCDatatable[,length(LOCDatatable)]
     
     yrange <- LOCDatatable[, 1]
     xrange <- LOCDatatable[, 2]
