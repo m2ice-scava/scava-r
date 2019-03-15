@@ -26,6 +26,7 @@ ui <- fluidPage(
     mainPanel(
       tags$h3("Metrics"),
       tableOutput("dataArray"),
+      a("What is cyclometic complexity risk ?", href = "https://en.wikipedia.org/wiki/Cyclomatic_complexity"),
       tags$h3("Lines of code over time"),
       plotOutput("LOCChart", width = "100%", height = "400px")
     )
